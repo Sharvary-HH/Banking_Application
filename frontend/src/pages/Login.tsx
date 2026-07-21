@@ -39,11 +39,11 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center text-2xl font-bold text-brand-700">Banking App</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold text-brand-400">Banking App</h1>
         <div className="card">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Log in</h2>
+          <h2 className="mb-4 text-lg font-semibold text-zinc-100">Log in</h2>
 
           {state?.successMessage && (
             <div className="mb-4">
@@ -90,9 +90,9 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-slate-500">
+          <p className="mt-4 text-center text-sm text-zinc-400">
             Don&apos;t have an account?{' '}
-            <Link to="/register" className="font-medium text-brand-600 hover:text-brand-700">
+            <Link to="/register" className="font-medium text-brand-400 hover:text-brand-300">
               Register
             </Link>
           </p>

@@ -53,7 +53,7 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Your accounts</h1>
+        <h1 className="text-2xl font-bold text-zinc-100">Your accounts</h1>
         <button type="button" className="btn-primary" onClick={() => setIsDialogOpen(true)}>
           + Create account
         </button>
@@ -66,9 +66,9 @@ export default function Dashboard() {
       )}
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Loading accounts…</p>
+        <p className="text-sm text-zinc-400">Loading accounts…</p>
       ) : accounts.length === 0 ? (
-        <div className="card text-center text-sm text-slate-500">
+        <div className="card text-center text-sm text-zinc-400">
           You don&apos;t have any accounts yet. Create one to get started.
         </div>
       ) : (
@@ -76,15 +76,15 @@ export default function Dashboard() {
           {accounts.map((account) => (
             <div key={account.id} className="card">
               <div className="mb-2 flex items-center justify-between">
-                <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-brand-700">
+                <span className="rounded-full bg-brand-500/15 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-brand-400">
                   {account.account_type}
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-zinc-500">
                   {new Date(account.created_at).toLocaleDateString()}
                 </span>
               </div>
-              <p className="text-sm text-slate-500">Account #{account.account_number}</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
+              <p className="text-sm text-zinc-400">Account #{account.account_number}</p>
+              <p className="mt-1 text-2xl font-bold text-zinc-100">
                 {formatCents(account.balance_cents)}
               </p>
               <div className="mt-4 flex gap-2">
@@ -101,9 +101,9 @@ export default function Dashboard() {
       )}
 
       {isDialogOpen && (
-        <div className="fixed inset-0 z-10 flex items-center justify-center bg-slate-900/40 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Create account</h2>
+        <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-100">Create account</h2>
 
             {createError && (
               <div className="mb-4">

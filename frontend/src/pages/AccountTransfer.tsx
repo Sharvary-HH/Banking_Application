@@ -158,27 +158,27 @@ export default function AccountTransfer() {
       <div className="mx-auto max-w-lg">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Manage funds</h1>
+            <h1 className="text-2xl font-bold text-zinc-100">Manage funds</h1>
             {account && (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-zinc-400">
                 Account #{account.account_number} · {formatCents(account.balance_cents)}
               </p>
             )}
           </div>
-          <Link to="/dashboard" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+          <Link to="/dashboard" className="text-sm font-medium text-brand-400 hover:text-brand-300">
             Back to dashboard
           </Link>
         </div>
 
         <div className="card">
-          <div className="mb-6 flex gap-1 rounded-md bg-slate-100 p-1">
+          <div className="mb-6 flex gap-1 rounded-md bg-zinc-800 p-1">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 type="button"
                 onClick={() => switchTab(t.key)}
                 className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                  tab === t.key ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                  tab === t.key ? 'bg-zinc-950 text-brand-400 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
                 {t.label}
@@ -268,8 +268,8 @@ export default function AccountTransfer() {
           )}
 
           {lastResult && (
-            <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
-              <p className="mb-1 font-medium text-slate-600">Transaction reference</p>
+            <div className="mt-6 rounded-md border border-zinc-800 bg-zinc-950 p-3 text-xs text-zinc-400">
+              <p className="mb-1 font-medium text-zinc-300">Transaction reference</p>
               {'reference_id' in lastResult ? (
                 <p>{lastResult.reference_id ?? lastResult.id}</p>
               ) : (
@@ -296,7 +296,7 @@ function AmountField({
         Amount (USD)
       </label>
       <div className="relative">
-        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">$</span>
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-500">$</span>
         <input
           id="amount"
           type="text"

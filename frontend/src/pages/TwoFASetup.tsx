@@ -56,7 +56,7 @@ export default function TwoFASetup() {
   return (
     <Layout>
       <div className="mx-auto max-w-md">
-        <h1 className="mb-6 text-2xl font-bold text-slate-900">Two-factor authentication</h1>
+        <h1 className="mb-6 text-2xl font-bold text-zinc-100">Two-factor authentication</h1>
 
         {isEnabled ? (
           <div className="card">
@@ -66,28 +66,28 @@ export default function TwoFASetup() {
           </div>
         ) : (
           <div className="card space-y-6">
-            {isLoadingSetup && <p className="text-sm text-slate-500">Loading setup…</p>}
+            {isLoadingSetup && <p className="text-sm text-zinc-400">Loading setup…</p>}
 
             {loadError && <Alert variant="error">{loadError}</Alert>}
 
             {setupData && (
               <>
                 <div>
-                  <p className="mb-3 text-sm text-slate-600">
+                  <p className="mb-3 text-sm text-zinc-400">
                     Scan this QR code with your authenticator app (e.g. Google Authenticator, Authy).
                   </p>
                   <div className="flex justify-center">
                     <img
                       src={`data:image/png;base64,${setupData.qr_code_base64}`}
                       alt="2FA QR code"
-                      className="h-48 w-48 rounded-md border border-slate-200"
+                      className="h-48 w-48 rounded-md border border-zinc-700 bg-white p-2"
                     />
                   </div>
                 </div>
 
                 <div>
                   <p className="label">Can&apos;t scan? Enter this code manually:</p>
-                  <code className="block break-all rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-800">
+                  <code className="block break-all rounded-md bg-zinc-800 px-3 py-2 text-sm text-zinc-200">
                     {setupData.secret}
                   </code>
                 </div>

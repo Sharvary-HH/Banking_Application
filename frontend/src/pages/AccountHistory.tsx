@@ -97,8 +97,8 @@ export default function AccountHistory() {
   return (
     <Layout>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Transaction history</h1>
-        <Link to="/dashboard" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+        <h1 className="text-2xl font-bold text-zinc-100">Transaction history</h1>
+        <Link to="/dashboard" className="text-sm font-medium text-brand-400 hover:text-brand-300">
           Back to dashboard
         </Link>
       </div>
@@ -194,13 +194,13 @@ export default function AccountHistory() {
 
       <div className="card overflow-x-auto">
         {isLoading ? (
-          <p className="text-sm text-slate-500">Loading transactions…</p>
+          <p className="text-sm text-zinc-400">Loading transactions…</p>
         ) : items.length === 0 ? (
-          <p className="text-sm text-slate-500">No transactions found.</p>
+          <p className="text-sm text-zinc-400">No transactions found.</p>
         ) : (
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <table className="min-w-full divide-y divide-zinc-800 text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+              <tr className="text-left text-xs uppercase tracking-wide text-zinc-500">
                 <th className="py-2 pr-4">Date</th>
                 <th className="py-2 pr-4">Type</th>
                 <th className="py-2 pr-4">Amount</th>
@@ -208,25 +208,25 @@ export default function AccountHistory() {
                 <th className="py-2 pr-4">Description</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-zinc-800">
               {items.map((tx) => {
                 const isCredit = CREDIT_TYPES.includes(tx.type)
                 return (
                   <tr key={tx.id}>
-                    <td className="py-2 pr-4 whitespace-nowrap text-slate-600">{formatDate(tx.created_at)}</td>
-                    <td className="py-2 pr-4 whitespace-nowrap text-slate-600">{TYPE_LABELS[tx.type]}</td>
+                    <td className="py-2 pr-4 whitespace-nowrap text-zinc-300">{formatDate(tx.created_at)}</td>
+                    <td className="py-2 pr-4 whitespace-nowrap text-zinc-300">{TYPE_LABELS[tx.type]}</td>
                     <td
                       className={`py-2 pr-4 whitespace-nowrap font-medium ${
-                        isCredit ? 'text-green-600' : 'text-red-600'
+                        isCredit ? 'text-green-400' : 'text-red-400'
                       }`}
                     >
                       {isCredit ? '+' : '-'}
                       {formatCents(tx.amount_cents)}
                     </td>
-                    <td className="py-2 pr-4 whitespace-nowrap text-slate-600">
+                    <td className="py-2 pr-4 whitespace-nowrap text-zinc-300">
                       {formatCents(tx.balance_after_cents)}
                     </td>
-                    <td className="py-2 pr-4 text-slate-500">{tx.description ?? '—'}</td>
+                    <td className="py-2 pr-4 text-zinc-500">{tx.description ?? '—'}</td>
                   </tr>
                 )
               })}
@@ -236,7 +236,7 @@ export default function AccountHistory() {
       </div>
 
       {total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+        <div className="mt-4 flex items-center justify-between text-sm text-zinc-400">
           <span>
             Page {page} of {totalPages} · {total} total
           </span>

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 
 const linkClasses = ({ isActive }: { isActive: boolean }) =>
   `rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-    isActive ? 'bg-brand-50 text-brand-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+    isActive ? 'bg-brand-500/15 text-brand-400' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
   }`
 
 export default function NavBar() {
@@ -16,10 +16,10 @@ export default function NavBar() {
   }
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="border-b border-zinc-800 bg-black">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
-          <span className="text-lg font-bold text-brand-700">Banking App</span>
+          <span className="text-lg font-bold text-brand-400">Banking App</span>
           <nav className="flex items-center gap-1">
             <NavLink to="/dashboard" className={linkClasses}>
               Dashboard
@@ -31,9 +31,9 @@ export default function NavBar() {
         </div>
         <div className="flex items-center gap-4">
           {user && (
-            <span className="text-sm text-slate-500">
-              {user.email} <span className="text-slate-300">·</span>{' '}
-              <span className="font-medium text-slate-700">{user.role}</span>
+            <span className="text-sm text-zinc-400">
+              {user.email} <span className="text-zinc-600">·</span>{' '}
+              <span className="font-medium text-zinc-300">{user.role}</span>
             </span>
           )}
           <button type="button" onClick={handleLogout} className="btn-secondary">

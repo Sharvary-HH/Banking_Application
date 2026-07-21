@@ -40,12 +40,12 @@ export default function TwoFAVerify() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center text-2xl font-bold text-brand-700">Banking App</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold text-brand-400">Banking App</h1>
         <div className="card">
-          <h2 className="mb-1 text-lg font-semibold text-slate-900">Two-factor verification</h2>
-          <p className="mb-4 text-sm text-slate-500">Enter the 6-digit code from your authenticator app.</p>
+          <h2 className="mb-1 text-lg font-semibold text-zinc-100">Two-factor verification</h2>
+          <p className="mb-4 text-sm text-zinc-400">Enter the 6-digit code from your authenticator app.</p>
 
           {error && (
             <div className="mb-4">
