@@ -33,6 +33,9 @@ export default function NavBar() {
             <NavLink to="/loans" className={linkClasses}>
               Loans
             </NavLink>
+            <NavLink to="/analytics" className={linkClasses}>
+              Analytics
+            </NavLink>
             <NavLink to="/settings/2fa" className={linkClasses}>
               2FA Setup
             </NavLink>

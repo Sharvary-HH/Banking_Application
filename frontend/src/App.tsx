@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import AccountHistory from './pages/AccountHistory'
 import AccountTransfer from './pages/AccountTransfer'
+import Analytics from './pages/Analytics'
 import Beneficiaries from './pages/Beneficiaries'
 import Dashboard from './pages/Dashboard'
 import Loans from './pages/Loans'
@@ -72,6 +73,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Loans />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <Analytics />
           </ProtectedRoute>
         }
       />

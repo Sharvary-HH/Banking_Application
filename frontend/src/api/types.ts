@@ -208,3 +208,32 @@ export interface AdminLoan extends Loan {
   user_id: string
   applicant_email: string
 }
+
+export interface TypeBreakdown {
+  type: TransactionType
+  total_cents: number
+  count: number
+}
+
+export interface MonthlyBreakdown {
+  month: string // "YYYY-MM"
+  credits_cents: number
+  debits_cents: number
+  net_cents: number
+}
+
+export interface AnalyticsSummary {
+  start_date: string | null
+  end_date: string | null
+  total_credits_cents: number
+  total_debits_cents: number
+  net_cents: number
+  by_type: TypeBreakdown[]
+  by_month: MonthlyBreakdown[]
+}
+
+export interface AnalyticsSummaryParams {
+  account_id?: string
+  start_date?: string
+  end_date?: string
+}

@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.account import Account
 from app.models.transaction import Transaction
 
 
@@ -47,3 +48,26 @@ class TransactionRepository:
         stmt = stmt.order_by(Transaction.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
         result = await self.db.execute(stmt)
         return list(result.scalars().all()), total
+
+    async def list_for_analytics(
+        self,
+        user_id: uuid.UUID,
+        *,
+        account_id: uuid.UUID | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> list[Transaction]:
+        """All transactions across every account the user owns (or just one, if
+        account_id is given) — joined through Account so this can never see another
+        user's transactions, same ownership discipline as everywhere else."""
+        stmt = select(Transaction).join(Account, Transaction.account_id == Account.id).where(Account.user_id == user_id)
+
+        if account_id is not None:
+            stmt = stmt.where(Transaction.account_id == account_id)
+        if start_date:
+            stmt = stmt.where(Transaction.created_at >= start_date)
+        if end_date:
+            stmt = stmt.where(Transaction.created_at <= end_date)
+
+        result = await self.db.execute(stmt.order_by(Transaction.created_at))
+        return list(result.scalars().all())

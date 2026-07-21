@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import accounts, admin, auth, beneficiaries, loans, scheduled_transfers, transactions
+from app.api.v1 import accounts, admin, analytics, auth, beneficiaries, loans, scheduled_transfers, transactions
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router)
@@ -9,4 +9,5 @@ api_router.include_router(transactions.router)
 api_router.include_router(beneficiaries.router)
 api_router.include_router(scheduled_transfers.router)
 api_router.include_router(loans.router)
+api_router.include_router(analytics.router)
 api_router.include_router(admin.router)
