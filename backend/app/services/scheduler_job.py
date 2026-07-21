@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.db.base import AsyncSessionLocal
 from app.models.scheduled_transfer import ScheduledTransfer, TransferFrequency
 from app.repositories.scheduled_transfer_repo import ScheduledTransferRepository
+from app.repositories.user_repo import UserRepository
+from app.services.email_service import send_email, transfer_email
 from app.services.transaction_service import TransactionService
 
 logger = logging.getLogger(__name__)
@@ -53,11 +55,12 @@ async def run_due_scheduled_transfers(sessionmaker: async_sessionmaker = AsyncSe
             # attribute would trigger an implicit lazy-reload, which AsyncSession
             # doesn't support outside an explicit await (raises MissingGreenlet).
             row_id = row.id
+            row_user_id = row.user_id
             row_next_run_at = row.next_run_at
 
             try:
-                await TransactionService(db).transfer(
-                    row.user_id,
+                result = await TransactionService(db).transfer(
+                    row_user_id,
                     row.from_account_id,
                     row.to_account_id,
                     row.amount_cents,
@@ -67,6 +70,11 @@ async def run_due_scheduled_transfers(sessionmaker: async_sessionmaker = AsyncSe
                 row.last_run_at = now
                 _advance_after_success(row)
                 await db.commit()
+
+                user = await UserRepository(db).get_by_id(row_user_id)
+                if user is not None:
+                    subject, html = transfer_email(result.debit)
+                    await send_email(user.email, subject, html)
             except Exception:
                 logger.exception("Scheduled transfer %s failed", row_id)
                 await db.rollback()

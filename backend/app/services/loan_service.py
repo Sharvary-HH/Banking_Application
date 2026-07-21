@@ -11,6 +11,7 @@ from app.repositories.loan_repo import LoanRepository
 from app.repositories.user_repo import UserRepository
 from app.schemas.loan import AdminLoanOut, EmiCalculationResponse
 from app.services.emi import calculate_emi
+from app.services.email_service import loan_disbursement_email, send_email
 from app.services.transaction_service import TransactionService
 
 
@@ -99,7 +100,7 @@ class LoanService:
     async def approve(self, loan_id: uuid.UUID, admin_user_id: uuid.UUID) -> Loan:
         loan = await self._get_pending_or_404(loan_id)
 
-        await TransactionService(self.db).loan_disbursement(
+        disbursement_tx = await TransactionService(self.db).loan_disbursement(
             loan.disbursement_account_id,
             loan.user_id,
             loan.principal_cents,
@@ -117,6 +118,12 @@ class LoanService:
             extra_data={"applicant_user_id": str(loan.user_id), "principal_cents": loan.principal_cents},
         )
         await self.db.commit()
+
+        applicant = await self.users.get_by_id(loan.user_id)
+        if applicant is not None:
+            subject, html = loan_disbursement_email(disbursement_tx, loan)
+            await send_email(applicant.email, subject, html)
+
         return loan
 
     async def reject(self, loan_id: uuid.UUID, admin_user_id: uuid.UUID) -> Loan:

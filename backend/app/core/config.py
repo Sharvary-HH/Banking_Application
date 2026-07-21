@@ -43,5 +43,11 @@ class Settings(BaseSettings):
     rate_limit_login: str = "5/minute"
     rate_limit_register: str = "5/minute"
 
+    # Email notifications: unset by default, which makes send_email() log instead of
+    # calling out to Resend — zero setup for local dev/tests/demo. Set RESEND_API_KEY
+    # to actually deliver mail (see README for the sandbox-domain caveat).
+    resend_api_key: str | None = None
+    email_from: str = "Banking App <onboarding@resend.dev>"
+
 
 settings = Settings()

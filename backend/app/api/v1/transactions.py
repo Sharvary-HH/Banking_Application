@@ -15,6 +15,7 @@ from app.schemas.transaction import (
     TransferResponse,
     WithdrawRequest,
 )
+from app.services.email_service import deposit_email, send_email, transfer_email, withdrawal_email
 from app.services.transaction_service import TransactionService
 
 router = APIRouter(tags=["transactions"])
@@ -28,7 +29,10 @@ async def deposit(
     current_user: User = Depends(get_current_user),
 ):
     service = TransactionService(db)
-    return await service.deposit(current_user.id, account_id, payload.amount_cents, payload.description)
+    tx = await service.deposit(current_user.id, account_id, payload.amount_cents, payload.description)
+    subject, html = deposit_email(tx)
+    await send_email(current_user.email, subject, html)
+    return tx
 
 
 @router.post("/accounts/{account_id}/withdraw", response_model=TransactionOut)
@@ -39,7 +43,10 @@ async def withdraw(
     current_user: User = Depends(get_current_user),
 ):
     service = TransactionService(db)
-    return await service.withdraw(current_user.id, account_id, payload.amount_cents, payload.description)
+    tx = await service.withdraw(current_user.id, account_id, payload.amount_cents, payload.description)
+    subject, html = withdrawal_email(tx)
+    await send_email(current_user.email, subject, html)
+    return tx
 
 
 @router.post("/transfers", response_model=TransferResponse)
@@ -49,13 +56,16 @@ async def transfer(
     current_user: User = Depends(get_current_user),
 ):
     service = TransactionService(db)
-    return await service.transfer(
+    result = await service.transfer(
         current_user.id,
         payload.from_account_id,
         payload.to_account_id,
         payload.amount_cents,
         payload.description,
     )
+    subject, html = transfer_email(result.debit)
+    await send_email(current_user.email, subject, html)
+    return result
 
 
 @router.get("/accounts/{account_id}/transactions", response_model=PaginatedTransactions)
