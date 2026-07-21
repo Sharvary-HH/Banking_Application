@@ -118,6 +118,31 @@ pytest -v
 
 The suite includes `test_concurrent_withdrawals_never_overdraw_the_account`, which fires two simultaneous withdrawals at one account where only one can be satisfied by the balance, and asserts exactly one succeeds and the balance never goes negative — this is the test that actually exercises the row-locking guarantee, not just the happy path.
 
+## Deploying to production
+
+Backend + Postgres + Redis on **Render** (free tier), frontend on **Vercel** (free tier).
+
+### Backend (Render)
+
+1. Sign up at [render.com](https://render.com) (GitHub OAuth is fastest).
+2. **New +** → **Blueprint** → connect the `Banking_Application` GitHub repo. Render reads [`render.yaml`](render.yaml) at the repo root and proposes three resources: `banking-db` (Postgres), `banking-redis` (Key Value / Redis-compatible), `banking-backend` (the Dockerized API). Click **Apply**.
+3. Wait for the Docker build + first deploy (a few minutes). The container runs `alembic upgrade head` on every boot before starting uvicorn, so the schema is created automatically — no manual migration step.
+4. Once live, copy the backend's public URL (`https://banking-backend-xxxx.onrender.com`) and confirm `/health` returns `{"status":"ok"}`.
+5. Seed demo data: open the **Shell** tab on the `banking-backend` service in the Render dashboard and run `python -m scripts.seed`.
+
+**Free-tier caveats:** the web service spins down after 15 min idle (~1 min cold start on the next request); the free Postgres database expires 30 days after creation (14-day grace period after that) and will need recreating or upgrading.
+
+### Frontend (Vercel)
+
+1. Sign up at [vercel.com](https://vercel.com) (GitHub OAuth).
+2. **Add New** → **Project** → import the same repo, set **Root Directory** to `frontend`.
+3. Add an environment variable `VITE_API_BASE_URL` = `https://<your-render-backend-url>/api/v1`, then deploy. (`vercel.json` in `frontend/` handles SPA routing so direct links like `/dashboard` don't 404.)
+4. Copy the resulting Vercel URL.
+
+### Wire them together
+
+Back on Render, open `banking-backend` → **Environment**, set `CORS_ORIGINS` to `["https://<your-vercel-url>"]`, and save (triggers a redeploy). Without this step the frontend's requests will be blocked by CORS.
+
 ## API docs
 
 Once the backend is running, full interactive OpenAPI/Swagger docs are at `/docs` (and ReDoc at `/redoc`).
