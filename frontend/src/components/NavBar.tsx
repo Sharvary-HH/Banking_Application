@@ -30,6 +30,9 @@ export default function NavBar() {
             <NavLink to="/scheduled-transfers" className={linkClasses}>
               Scheduled Transfers
             </NavLink>
+            <NavLink to="/loans" className={linkClasses}>
+              Loans
+            </NavLink>
             <NavLink to="/settings/2fa" className={linkClasses}>
               2FA Setup
             </NavLink>

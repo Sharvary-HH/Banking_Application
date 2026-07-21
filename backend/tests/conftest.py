@@ -15,6 +15,7 @@ import pytest
 import pytest_asyncio
 import redis
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.core.config import settings
@@ -71,3 +72,17 @@ async def register_and_login(client: AsyncClient, email: str | None = None, pass
 
 def auth_headers(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
+
+
+async def promote_to_admin(db_sessionmaker: async_sessionmaker, email: str) -> None:
+    """Flips a registered user's role to admin directly in the DB (there's no
+    self-service escalation endpoint by design). get_current_user re-fetches the user
+    from the DB on every request rather than trusting the JWT's role claim, so the
+    caller's existing access token starts working for admin routes immediately."""
+    from app.models.user import User
+
+    async with db_sessionmaker() as session:
+        result = await session.execute(select(User).where(User.email == email))
+        user = result.scalar_one()
+        user.role = "admin"
+        await session.commit()

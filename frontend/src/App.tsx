@@ -4,6 +4,7 @@ import AccountHistory from './pages/AccountHistory'
 import AccountTransfer from './pages/AccountTransfer'
 import Beneficiaries from './pages/Beneficiaries'
 import Dashboard from './pages/Dashboard'
+import Loans from './pages/Loans'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ScheduledTransfers from './pages/ScheduledTransfers'
@@ -63,6 +64,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ScheduledTransfers />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/loans"
+        element={
+          <ProtectedRoute>
+            <Loans />
           </ProtectedRoute>
         }
       />

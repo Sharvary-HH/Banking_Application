@@ -47,6 +47,41 @@ class TransactionService:
         await self.db.commit()
         return tx
 
+    async def loan_disbursement(
+        self, account_id: uuid.UUID, applicant_user_id: uuid.UUID, amount_cents: int, description: str
+    ) -> Transaction:
+        """Credits an account with loan principal on admin approval. Deliberately not
+        ownership-scoped like deposit(): the actor here is the approving admin, not the
+        account owner — ownership of `account_id` by the applicant was already validated
+        when the loan was created (see LoanService.apply). The audit log is still keyed
+        to the applicant (whose account/money this is), matching deposit()'s convention."""
+        account = await self.accounts.get_locked(account_id)
+        if account is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+
+        account.balance_cents += amount_cents
+        account.version += 1
+
+        tx = await self.transactions.create(
+            Transaction(
+                account_id=account.id,
+                related_account_id=None,
+                type=TransactionType.LOAN_DISBURSEMENT.value,
+                amount_cents=amount_cents,
+                balance_after_cents=account.balance_cents,
+                description=description,
+            )
+        )
+        await self.audit_logs.create(
+            user_id=applicant_user_id,
+            action="loan_disbursement",
+            entity_type="account",
+            entity_id=str(account.id),
+            extra_data={"amount_cents": amount_cents, "transaction_id": str(tx.id)},
+        )
+        await self.db.commit()
+        return tx
+
     async def withdraw(self, user_id: uuid.UUID, account_id: uuid.UUID, amount_cents: int, description: str | None) -> Transaction:
         account = await self.accounts.get_owned_locked(account_id, user_id)
         if account is None:

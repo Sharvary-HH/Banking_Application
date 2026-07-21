@@ -14,9 +14,10 @@ const TYPE_LABELS: Record<TransactionType, string> = {
   withdraw: 'Withdraw',
   transfer_in: 'Transfer in',
   transfer_out: 'Transfer out',
+  loan_disbursement: 'Loan disbursement',
 }
 
-const CREDIT_TYPES: TransactionType[] = ['deposit', 'transfer_in']
+const CREDIT_TYPES: TransactionType[] = ['deposit', 'transfer_in', 'loan_disbursement']
 
 interface FilterFormState {
   type: TransactionType | ''

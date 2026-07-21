@@ -15,6 +15,7 @@ class TransactionType(str, Enum):
     WITHDRAW = "withdraw"
     TRANSFER_IN = "transfer_in"
     TRANSFER_OUT = "transfer_out"
+    LOAN_DISBURSEMENT = "loan_disbursement"
 
 
 class Transaction(Base):

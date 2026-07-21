@@ -40,7 +40,7 @@ Backend follows a strict **Router → Service → Repository → Model** layerin
 | Cache / rate limiting | Redis via `slowapi` |
 | Auth | JWT access + refresh tokens, `argon2` password hashing, TOTP 2FA (`pyotp`) |
 | Frontend | React, TypeScript, Tailwind CSS, Vite |
-| Testing | pytest + pytest-asyncio + httpx (37 tests, incl. a real DB-level concurrency test) |
+| Testing | pytest + pytest-asyncio + httpx (55 tests, incl. a real DB-level concurrency test) |
 | Infra | Docker Compose, GitHub Actions CI |
 | Scheduling | APScheduler (in-process background job, no extra infra) |
 
@@ -55,13 +55,11 @@ Backend follows a strict **Router → Service → Repository → Model** layerin
 - Paginated, filterable transaction history (by type, date range, amount range)
 - Immutable audit log of every security- and money-relevant action
 
-**Phase 2, shipped so far — Beneficiaries + scheduled/recurring transfers:**
-- Save a beneficiary by account number (`GET /accounts/lookup` resolves a number to an id without ever exposing the owner or balance)
-- Schedule a transfer (once / daily / weekly / monthly) from any account's Transfer page; a background job (APScheduler, polling every 60s) executes due transfers by calling the exact same row-locked `TransactionService.transfer()` manual transfers use — no separate, unaudited money-movement path
-- Failed runs (e.g. insufficient funds) back off 1 hour and retry automatically rather than silently dropping the schedule
-- **Known limitation:** on Render's free tier the backend spins down after 15 min idle, so the scheduler pauses with it — a due recurring transfer fires late (on the next request that wakes the service), not exactly on schedule
+**Phase 2, shipped so far:**
+- **Beneficiaries + scheduled/recurring transfers** — save a beneficiary by account number (`GET /accounts/lookup` resolves a number to an id without ever exposing the owner or balance); schedule a transfer (once / daily / weekly / monthly) that a background job (APScheduler, polling every 60s) executes by calling the exact same row-locked `TransactionService.transfer()` manual transfers use — no separate, unaudited money-movement path. Failed runs (e.g. insufficient funds) back off 1 hour and retry automatically. *Known limitation:* on Render's free tier the backend spins down after 15 min idle, so the scheduler pauses with it — a due recurring transfer fires late (on the next request that wakes the service), not exactly on schedule.
+- **Loans + EMI calculator** — a real reducing-balance amortization formula (`EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ − 1)`, [`app/services/emi.py`](backend/app/services/emi.py)), unit-tested against a hand-verified reference value independent of the API layer. Customers apply with a principal/rate/term and a disbursement account; admins approve or reject from a small in-page queue (not a full admin panel — just enough to exercise the disbursement path through the UI). Approval credits the account via a new `loan_disbursement` transaction type, reusing the same row-locking pattern as deposits, and the EMI figure is locked in at application time so it can't drift after approval. Repayment schedules aren't automated in this pass — disbursement is a one-time credit of the principal.
 
-**Still to come (Phase 2):** loan requests + EMI calculator, spending analytics dashboard, email notifications, and live deployment verification.
+**Still to come (Phase 2):** spending analytics dashboard, email notifications, and live deployment verification.
 
 ## Running locally
 

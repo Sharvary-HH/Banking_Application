@@ -76,7 +76,7 @@ export interface CreateAccountRequest {
   account_type: AccountType
 }
 
-export type TransactionType = 'deposit' | 'withdraw' | 'transfer_in' | 'transfer_out'
+export type TransactionType = 'deposit' | 'withdraw' | 'transfer_in' | 'transfer_out' | 'loan_disbursement'
 
 export interface TransactionOut {
   id: string
@@ -172,4 +172,39 @@ export interface CreateScheduledTransferRequest {
   frequency: TransferFrequency
   start_at?: string
   end_date?: string
+}
+
+export interface EmiCalculationRequest {
+  principal_cents: number
+  annual_interest_rate_bps: number
+  term_months: number
+}
+
+export interface EmiCalculationResponse {
+  emi_cents: number
+  total_payment_cents: number
+  total_interest_cents: number
+}
+
+export interface LoanApplyRequest extends EmiCalculationRequest {
+  disbursement_account_id: string
+}
+
+export type LoanStatus = 'pending' | 'approved' | 'rejected'
+
+export interface Loan {
+  id: string
+  disbursement_account_id: string
+  principal_cents: number
+  annual_interest_rate_bps: number
+  term_months: number
+  emi_cents: number
+  status: LoanStatus
+  decided_at: string | null
+  created_at: string
+}
+
+export interface AdminLoan extends Loan {
+  user_id: string
+  applicant_email: string
 }
