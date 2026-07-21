@@ -40,11 +40,13 @@ Backend follows a strict **Router → Service → Repository → Model** layerin
 | Cache / rate limiting | Redis via `slowapi` |
 | Auth | JWT access + refresh tokens, `argon2` password hashing, TOTP 2FA (`pyotp`) |
 | Frontend | React, TypeScript, Tailwind CSS, Vite |
-| Testing | pytest + pytest-asyncio + httpx (25 tests, incl. a real DB-level concurrency test) |
+| Testing | pytest + pytest-asyncio + httpx (37 tests, incl. a real DB-level concurrency test) |
 | Infra | Docker Compose, GitHub Actions CI |
+| Scheduling | APScheduler (in-process background job, no extra infra) |
 
-## Features (Phase 1 / MVP)
+## Features
 
+**Phase 1 (MVP):**
 - Registration & login with JWT access + refresh tokens (refresh tokens are hashed at rest and rotated on every use)
 - TOTP-based 2FA (QR provisioning + verification), rate-limited login/register endpoints
 - Role-based access control (customer / admin)
@@ -53,7 +55,13 @@ Backend follows a strict **Router → Service → Repository → Model** layerin
 - Paginated, filterable transaction history (by type, date range, amount range)
 - Immutable audit log of every security- and money-relevant action
 
-**Explicitly out of scope for this phase** (planned next): loan requests + EMI calculator, beneficiary management + scheduled/recurring transfers, spending analytics dashboard, email notifications, and live deployment.
+**Phase 2, shipped so far — Beneficiaries + scheduled/recurring transfers:**
+- Save a beneficiary by account number (`GET /accounts/lookup` resolves a number to an id without ever exposing the owner or balance)
+- Schedule a transfer (once / daily / weekly / monthly) from any account's Transfer page; a background job (APScheduler, polling every 60s) executes due transfers by calling the exact same row-locked `TransactionService.transfer()` manual transfers use — no separate, unaudited money-movement path
+- Failed runs (e.g. insufficient funds) back off 1 hour and retry automatically rather than silently dropping the schedule
+- **Known limitation:** on Render's free tier the backend spins down after 15 min idle, so the scheduler pauses with it — a due recurring transfer fires late (on the next request that wakes the service), not exactly on schedule
+
+**Still to come (Phase 2):** loan requests + EMI calculator, spending analytics dashboard, email notifications, and live deployment verification.
 
 ## Running locally
 

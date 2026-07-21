@@ -127,3 +127,49 @@ export interface TransactionListResponse {
 export interface ApiErrorBody {
   detail?: string | Record<string, unknown> | Array<unknown>
 }
+
+export interface AccountLookup {
+  id: string
+  account_number: string
+  account_type: AccountType
+}
+
+export interface Beneficiary {
+  id: string
+  nickname: string
+  account_id: string
+  account_number: string
+  created_at: string
+}
+
+export interface CreateBeneficiaryRequest {
+  nickname: string
+  account_id: string
+}
+
+export type TransferFrequency = 'once' | 'daily' | 'weekly' | 'monthly'
+
+export interface ScheduledTransfer {
+  id: string
+  from_account_id: string
+  to_account_id: string
+  amount_cents: number
+  description: string | null
+  frequency: TransferFrequency
+  next_run_at: string
+  end_date: string | null
+  is_active: boolean
+  last_run_at: string | null
+  last_run_status: 'success' | 'failed' | null
+  created_at: string
+}
+
+export interface CreateScheduledTransferRequest {
+  from_account_id: string
+  to_account_id: string
+  amount_cents: number
+  description?: string
+  frequency: TransferFrequency
+  start_at?: string
+  end_date?: string
+}

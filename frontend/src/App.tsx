@@ -2,9 +2,11 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import AccountHistory from './pages/AccountHistory'
 import AccountTransfer from './pages/AccountTransfer'
+import Beneficiaries from './pages/Beneficiaries'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ScheduledTransfers from './pages/ScheduledTransfers'
 import TwoFASetup from './pages/TwoFASetup'
 import TwoFAVerify from './pages/TwoFAVerify'
 
@@ -45,6 +47,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AccountHistory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/beneficiaries"
+        element={
+          <ProtectedRoute>
+            <Beneficiaries />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/scheduled-transfers"
+        element={
+          <ProtectedRoute>
+            <ScheduledTransfers />
           </ProtectedRoute>
         }
       />

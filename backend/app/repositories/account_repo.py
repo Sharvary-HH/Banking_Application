@@ -53,3 +53,7 @@ class AccountRepository:
     async def account_number_exists(self, account_number: str) -> bool:
         result = await self.db.execute(select(Account.id).where(Account.account_number == account_number))
         return result.scalar_one_or_none() is not None
+
+    async def get_by_account_number(self, account_number: str) -> Account | None:
+        result = await self.db.execute(select(Account).where(Account.account_number == account_number))
+        return result.scalar_one_or_none()

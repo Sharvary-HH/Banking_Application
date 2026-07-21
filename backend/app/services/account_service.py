@@ -31,6 +31,16 @@ class AccountService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
         return account
 
+    async def lookup_by_account_number(self, account_number: str) -> Account:
+        # Deliberately NOT ownership-scoped — this backs the "add a beneficiary by account
+        # number" flow, so any authenticated user can resolve any account number. The
+        # response schema (AccountLookupOut) only ever exposes id/number/type, never
+        # balance or the owning user, so this can't be used to snoop on someone's finances.
+        account = await self.accounts.get_by_account_number(account_number)
+        if account is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+        return account
+
     async def _generate_unique_account_number(self) -> str:
         for _ in range(10):
             candidate = "".join(secrets.choice("0123456789") for _ in range(10))

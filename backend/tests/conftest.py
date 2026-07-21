@@ -7,6 +7,9 @@ from collections.abc import AsyncGenerator
 # itself trip the brute-force guard it's supposed to be testing around.
 os.environ["RATE_LIMIT_LOGIN"] = "10000/minute"
 os.environ["RATE_LIMIT_REGISTER"] = "10000/minute"
+# Prevents the APScheduler background job (app/main.py's lifespan) from starting and
+# polling the dev DB during test runs — see app/core/scheduler.py.
+os.environ["ENVIRONMENT"] = "test"
 
 import pytest
 import pytest_asyncio

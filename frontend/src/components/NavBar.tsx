@@ -24,6 +24,12 @@ export default function NavBar() {
             <NavLink to="/dashboard" className={linkClasses}>
               Dashboard
             </NavLink>
+            <NavLink to="/beneficiaries" className={linkClasses}>
+              Beneficiaries
+            </NavLink>
+            <NavLink to="/scheduled-transfers" className={linkClasses}>
+              Scheduled Transfers
+            </NavLink>
             <NavLink to="/settings/2fa" className={linkClasses}>
               2FA Setup
             </NavLink>

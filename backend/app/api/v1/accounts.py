@@ -7,6 +7,7 @@ from app.core.deps import get_current_user
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.account import AccountCreate, AccountOut
+from app.schemas.beneficiary import AccountLookupOut
 from app.services.account_service import AccountService
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
@@ -26,6 +27,19 @@ async def create_account(
 async def list_accounts(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     service = AccountService(db)
     return await service.list_accounts(current_user.id)
+
+
+@router.get("/lookup", response_model=AccountLookupOut)
+async def lookup_account(
+    account_number: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),  # noqa: ARG001 — auth required, result unused by design
+):
+    """Resolves an account number to its id/type only (never balance or owner) — this is
+    what lets a user save a beneficiary by account number without seeing whose it is.
+    Registered before /{account_id} so "lookup" isn't swallowed as a UUID path param."""
+    service = AccountService(db)
+    return await service.lookup_by_account_number(account_number)
 
 
 @router.get("/{account_id}", response_model=AccountOut)

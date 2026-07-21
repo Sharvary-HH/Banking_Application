@@ -1,14 +1,23 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { accountsApi } from '../api/accounts'
+import { beneficiariesApi } from '../api/beneficiaries'
 import { getErrorMessage } from '../api/errorMessage'
+import { scheduledTransfersApi } from '../api/scheduledTransfers'
 import { transactionsApi } from '../api/transactions'
-import type { Account, TransactionOut, TransferResponse } from '../api/types'
+import type { Account, Beneficiary, TransactionOut, TransferFrequency, TransferResponse } from '../api/types'
 import Alert from '../components/Alert'
 import Layout from '../components/Layout'
 import { dollarsToCents, formatCents } from '../utils/money'
 
 type Tab = 'deposit' | 'withdraw' | 'transfer'
+
+const FREQUENCIES: { key: TransferFrequency; label: string }[] = [
+  { key: 'once', label: 'Once' },
+  { key: 'daily', label: 'Daily' },
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'monthly', label: 'Monthly' },
+]
 
 export default function AccountTransfer() {
   const { id } = useParams<{ id: string }>()
@@ -17,6 +26,7 @@ export default function AccountTransfer() {
   const [tab, setTab] = useState<Tab>('deposit')
   const [account, setAccount] = useState<Account | null>(null)
   const [otherAccounts, setOtherAccounts] = useState<Account[]>([])
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([])
 
   // Deposit / withdraw shared state
   const [amount, setAmount] = useState('')
@@ -25,6 +35,12 @@ export default function AccountTransfer() {
   // Transfer-specific state
   const [targetAccountId, setTargetAccountId] = useState('')
   const [manualTargetAccountId, setManualTargetAccountId] = useState('')
+
+  // Scheduling state (only used when isScheduled is on, within the transfer tab)
+  const [isScheduled, setIsScheduled] = useState(false)
+  const [frequency, setFrequency] = useState<TransferFrequency>('once')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +57,15 @@ export default function AccountTransfer() {
         // Non-fatal: the forms still work without this context.
       }
     }
+    async function loadBeneficiaries() {
+      try {
+        setBeneficiaries(await beneficiariesApi.list())
+      } catch {
+        // Non-fatal: the manual account-id fallback still works.
+      }
+    }
     void loadAccounts()
+    void loadBeneficiaries()
   }, [accountId])
 
   function resetFeedback() {
@@ -57,6 +81,10 @@ export default function AccountTransfer() {
     setDescription('')
     setTargetAccountId('')
     setManualTargetAccountId('')
+    setIsScheduled(false)
+    setFrequency('once')
+    setStartDate('')
+    setEndDate('')
   }
 
   async function handleDeposit(e: FormEvent) {
@@ -124,24 +152,41 @@ export default function AccountTransfer() {
     }
     setIsSubmitting(true)
     try {
-      const result = await transactionsApi.transfer({
-        from_account_id: accountId,
-        to_account_id: destination,
-        amount_cents: cents,
-        description: description || undefined,
-      })
-      setLastResult(result)
-      setSuccessMessage(
-        `Transferred ${formatCents(cents)} to account ${destination}. New balance: ${formatCents(
-          result.debit.balance_after_cents,
-        )}.`,
-      )
+      if (isScheduled) {
+        await scheduledTransfersApi.create({
+          from_account_id: accountId,
+          to_account_id: destination,
+          amount_cents: cents,
+          description: description || undefined,
+          frequency,
+          start_at: startDate ? new Date(startDate).toISOString() : undefined,
+          end_date: endDate ? new Date(endDate).toISOString() : undefined,
+        })
+        setSuccessMessage(
+          `Scheduled a ${frequency} transfer of ${formatCents(cents)}. See it on the Scheduled Transfers page.`,
+        )
+      } else {
+        const result = await transactionsApi.transfer({
+          from_account_id: accountId,
+          to_account_id: destination,
+          amount_cents: cents,
+          description: description || undefined,
+        })
+        setLastResult(result)
+        setSuccessMessage(
+          `Transferred ${formatCents(cents)} to account ${destination}. New balance: ${formatCents(
+            result.debit.balance_after_cents,
+          )}.`,
+        )
+      }
       setAmount('')
       setDescription('')
       setTargetAccountId('')
       setManualTargetAccountId('')
+      setStartDate('')
+      setEndDate('')
     } catch (err) {
-      setError(getErrorMessage(err, 'Transfer failed.'))
+      setError(getErrorMessage(err, isScheduled ? 'Could not schedule transfer.' : 'Transfer failed.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -232,16 +277,31 @@ export default function AccountTransfer() {
                     setTargetAccountId(e.target.value)
                     setManualTargetAccountId('')
                   }}
-                  disabled={otherAccounts.length === 0}
+                  disabled={otherAccounts.length === 0 && beneficiaries.length === 0}
                 >
                   <option value="">
-                    {otherAccounts.length === 0 ? 'No other accounts available' : 'Select an account…'}
+                    {otherAccounts.length === 0 && beneficiaries.length === 0
+                      ? 'No saved accounts or beneficiaries'
+                      : 'Select an account…'}
                   </option>
-                  {otherAccounts.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.account_type} · #{a.account_number}
-                    </option>
-                  ))}
+                  {otherAccounts.length > 0 && (
+                    <optgroup label="Your other accounts">
+                      {otherAccounts.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.account_type} · #{a.account_number}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {beneficiaries.length > 0 && (
+                    <optgroup label="Beneficiaries">
+                      {beneficiaries.map((b) => (
+                        <option key={b.id} value={b.account_id}>
+                          {b.nickname} · #{b.account_number}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
               <div>
@@ -261,8 +321,72 @@ export default function AccountTransfer() {
                 />
               </div>
               <DescriptionField description={description} setDescription={setDescription} />
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="isScheduled"
+                  type="checkbox"
+                  checked={isScheduled}
+                  onChange={(e) => setIsScheduled(e.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-brand-600 focus:ring-brand-500"
+                />
+                <label htmlFor="isScheduled" className="text-sm text-zinc-300">
+                  Schedule this transfer instead of sending it now
+                </label>
+              </div>
+
+              {isScheduled && (
+                <div className="space-y-4 rounded-md border border-zinc-800 bg-zinc-950 p-3">
+                  <div>
+                    <label htmlFor="frequency" className="label">
+                      Frequency
+                    </label>
+                    <select
+                      id="frequency"
+                      className="input"
+                      value={frequency}
+                      onChange={(e) => setFrequency(e.target.value as TransferFrequency)}
+                    >
+                      {FREQUENCIES.map((f) => (
+                        <option key={f.key} value={f.key}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="startDate" className="label">
+                        Start (optional, defaults to now)
+                      </label>
+                      <input
+                        id="startDate"
+                        type="datetime-local"
+                        className="input"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
+                    {frequency !== 'once' && (
+                      <div>
+                        <label htmlFor="endDate" className="label">
+                          End (optional)
+                        </label>
+                        <input
+                          id="endDate"
+                          type="date"
+                          className="input"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
-                {isSubmitting ? 'Transferring…' : 'Transfer'}
+                {isSubmitting ? (isScheduled ? 'Scheduling…' : 'Transferring…') : isScheduled ? 'Schedule transfer' : 'Transfer'}
               </button>
             </form>
           )}
